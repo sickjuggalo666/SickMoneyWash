@@ -1,237 +1,11 @@
 local cutting = false
 local packaged = false
 local washed = false
+local IsPowered = false
 
 local Inventory = exports.ox_inventory
 
-local function OpenWashMenu()
-    local money = exports.ox_inventory:Search('count', 'money')
-    local input = lib.inputDialog('Money Wash', {
-        {type = 'number', label = 'Dirty Money', description = 'Enter Amount you want to wash', icon = 'hashtag', required = true},
-      })
-
-    if not input or (input[1] > money) then 
-        lib.notify({
-            title = 'Money Wash',
-            description = 'We Don\'t like Liars Here',
-            type = 'error'
-        })
-        return
-    end
-    local amount = input[1]
-    TriggerEvent("SickMoneyWash:washmoney2", Config.Laundry.washingZone.coord, Config.Laundry.washingZone.heading, amount)
-
-end
-
-local function EnterWash()
-	DoScreenFadeOut(500)
-	Wait(2000)
-	SetEntityCoords(PlayerPedId(), Config.MoneyWash["Exit"].coords.x, Config.MoneyWash["Exit"].coords.y, Config.MoneyWash["Exit"].coords.z, 0, 0, 0, false)
-	SetEntityHeading(PlayerPedId(), Config.MoneyWash["Exit"].coords.w)
-	DoScreenFadeIn(500)
-end
-
-local function ExitWash()
-	DoScreenFadeOut(500)
-	Wait(2000)
-	SetEntityCoords(PlayerPedId(), Config.MoneyWash["Enter"].coords.x, Config.MoneyWash["Enter"].coords.y, Config.MoneyWash["Enter"].coords.z, 0, 0, 0, false)
-	SetEntityHeading(PlayerPedId(), Config.MoneyWash["Enter"].coords.w)
-	DoScreenFadeIn(500)
-end
-
-
-local function CuttingMoney()
-    if not cutting then
-        cutting = true
-        cuttingMoney2(Config.Laundry.cuttingZone.coords, Config.Laundry.cuttingZone.heading)
-	else
-        lib.notify({
-            title = 'Money Wash',
-            description = 'You already cut the money',
-            type = 'error'
-        })
-		Wait(1000)
-	end
-end
-
-local function PackageMoney()
-    if cutting then
-        if washed then 
-            if not packaged then
-                packaged = true
-                packageMoneyanim()
-            else
-                lib.notify({
-                    title = 'Money Wash',
-                    description = 'Money Already Packed',
-                    type = 'error'
-                })
-                ESX.ShowNotification('You already pack the money')
-                Wait(1000)
-            end
-        else
-            lib.notify({
-                title = 'Money Wash',
-                description = 'Wash Money First',
-                type = 'error'
-            })
-        end
-    else
-        lib.notify({
-            title = 'Money Wash',
-            description = 'Cut Money First',
-            type = 'error'
-        })
-    end
-end
-
-local function Washmoney()
-  if cutting and not packaged then
-    OpenWashedMenu()
-  else
-    lib.notify({
-        title = 'Money Wash',
-        description = 'Cut Money First',
-        type = 'error'
-    })
-  end
-end
-
-
-CreateThread(function()	
-    exports.ox_target:addBoxZone({
-        coords = Config.TargetLocs["Enter"].coords,
-        size = vec3(1, 2, 2),
-        rotation = 90,
-        debug = false,
-        options = {
-            {
-                name = 'box',
-                icon = 'fa-solid fa-cube',
-                label = 'Enter Money Wash',
-                canInteract = function()
-                    local Key = Inventory:Search('count', 'lockpick')
-                    if Key > 0 then
-                        return true
-                    else
-                        return false
-                    end
-                end,
-                onSelect = function()
-                    EnterWash()
-                end
-            }
-        }
-    })
-    exports.ox_target:addBoxZone({
-        coords = Config.TargetLocs["Exit"].coords,
-        size = vec3(1, 2, 3),
-        rotation = 90,
-        debug = false,
-        options = {
-            {
-                name = 'box',
-                icon = 'fa-solid fa-cube',
-                label = 'Exit Money Wash',
-                canInteract = function()
-                    return true
-                end,
-                onSelect = function()
-                    ExitWash()
-                end
-            }
-        }
-    })
-    exports.ox_target:addBoxZone({
-        coords = Config.TargetLocs['cuttingZone'].coords,
-        size = vec3(1, 2, 2),
-        rotation = 90,
-        debug = false,
-        options = {
-            {
-                name = 'box',
-                icon = 'fa-solid fa-cube',
-                label = 'Cut Money',
-                canInteract = function()
-                    local Key = Inventory:Search('count', 'black_money')
-                    if Key > 0 then
-                        return true
-                    else
-                        return false
-                    end
-                end,
-                onSelect = function()
-                    CuttingMoney()
-                end
-            }
-        }
-    })
-    exports.ox_target:addBoxZone({
-        coords = Config.TargetLocs['packageZone'].coords,
-        size = vec3(1, 2, 2),
-        rotation = 90,
-        debug = false,
-        options = {
-            {
-                name = 'box',
-                icon = 'fa-solid fa-cube',
-                label = 'Pack Money',
-                canInteract = function()
-                    if cutting then
-                        return true
-                    else
-                        return false
-                    end
-                end,
-                onSelect = function()
-                    PackageMoney()
-                end
-            }
-        }
-    })
-    exports.ox_target:addSphereZone({
-        coords = Config.TargetLocs['washingZone'].coords,
-        radius = 1,
-        debug = true,
-        options = {
-            {
-                name = 'box',
-                icon = 'fa-solid fa-cube',
-                label = 'Wash Money',
-                canInteract = function()
-                    if cutting and packaged then
-                        return true
-                    else
-                        return false
-                    end
-                end,
-                onSelect = function()
-                    Washmoney()
-                end
-            }
-        }
-    })
-end)
-
-CreateThread(function()
-    if Config.Blips then
-        for k, v in pairs(Config.Blip) do
-            FuelStationBlip = AddBlipForCoord(v.x, v.y, v.z)
-            SetBlipSprite(FuelStationBlip, Config.BlipSpirte)
-            SetBlipDisplay(FuelStationBlip, 2)
-            SetBlipScale(FuelStationBlip, Config.BlipSize)
-            SetBlipAsShortRange(FuelStationBlip, true)
-            SetBlipColour(FuelStationBlip, Config.BlipColor)
-            BeginTextCommandSetBlipName("STRING")
-            AddTextComponentSubstringPlayerName(Config.BlipLabel)
-            EndTextCommandSetBlipName(FuelStationBlip)
-        end
-    end
-end)
-
-
-
-function cuttingMoney2(coord, heading)
+local function cuttingMoney2(coord, heading)
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_cut_sheets@"
     RequestAnimDict(animDict)
@@ -318,7 +92,7 @@ local Items = {
 
 
 
-function packageMoneyanim()
+local function packageMoneyanim()
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_counting_notes@"
     RequestAnimDict(animDict)
@@ -375,7 +149,7 @@ function packageMoneyanim()
 end
 
 
-function washmoney2(coord, heading,amount)
+local function washmoney2(coord, heading,amount)
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_drying_notes@"
     RequestAnimDict(animDict)
@@ -407,3 +181,253 @@ function washmoney2(coord, heading,amount)
     packaged = false
     washed = false
 end
+
+local function OpenWashMenu()
+    local money = Inventory:Search('count', 'money')
+    local input = lib.inputDialog('Money Wash', {
+        {type = 'number', label = 'Dirty Money', description = 'Enter Amount you want to wash', icon = 'hashtag', required = true},
+      })
+
+    if not input or (input[1] > money) then
+        lib.notify({
+            title = 'Money Wash',
+            description = 'We Don\'t like Liars Here',
+            type = 'error'
+        })
+        return
+    end
+    local amount = input[1]
+    TriggerEvent("SickMoneyWash:washmoney2", Config.Laundry.washingZone.coord, Config.Laundry.washingZone.heading, amount)
+
+end
+
+local function EnterWash()
+	DoScreenFadeOut(500)
+	Wait(2000)
+	SetEntityCoords(PlayerPedId(), Config.MoneyWash["Exit"].coords.x, Config.MoneyWash["Exit"].coords.y, Config.MoneyWash["Exit"].coords.z, 0, 0, 0, false)
+	SetEntityHeading(PlayerPedId(), Config.MoneyWash["Exit"].coords.w)
+	DoScreenFadeIn(500)
+end
+
+local function ExitWash()
+	DoScreenFadeOut(500)
+	Wait(2000)
+	SetEntityCoords(PlayerPedId(), Config.MoneyWash["Enter"].coords.x, Config.MoneyWash["Enter"].coords.y, Config.MoneyWash["Enter"].coords.z, 0, 0, 0, false)
+	SetEntityHeading(PlayerPedId(), Config.MoneyWash["Enter"].coords.w)
+	DoScreenFadeIn(500)
+end
+
+
+local function CuttingMoney()
+    if not cutting then
+        cutting = true
+        cuttingMoney2(Config.Laundry.cuttingZone.coords, Config.Laundry.cuttingZone.heading)
+	else
+        lib.notify({
+            title = 'Money Wash',
+            description = 'You already cut the money',
+            type = 'error'
+        })
+	end
+end
+
+local function PackageMoney()
+    if cutting then
+        if washed then
+            if not packaged then
+                packaged = true
+                packageMoneyanim()
+            else
+                lib.notify({
+                    title = 'Money Wash',
+                    description = 'You already pack the money',
+                    type = 'error'
+                })
+            end
+        else
+            lib.notify({
+                title = 'Money Wash',
+                description = 'Wash Money First',
+                type = 'error'
+            })
+        end
+    else
+        lib.notify({
+            title = 'Money Wash',
+            description = 'Cut Money First',
+            type = 'error'
+        })
+    end
+end
+
+local function Washmoney()
+  if cutting and not packaged then
+    OpenWashedMenu()
+  else
+    lib.notify({
+        title = 'Money Wash',
+        description = 'Cut/Wash Money First',
+        type = 'error'
+    })
+  end
+end
+
+local function KickOnPower()
+    if IsPowered then
+        exports.ox_target:addBoxZone({
+            coords = Config.TargetLocs['cuttingZone'].coords,
+            size = vec3(1, 2, 2),
+            rotation = 90,
+            debug = false,
+            options = {
+                {
+                    name = 'box',
+                    icon = 'fa-solid fa-cube',
+                    label = 'Cut Money',
+                    canInteract = function()
+                        local Key = Inventory:Search('count', 'black_money')
+                        if Key > 0 then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    onSelect = function()
+                        CuttingMoney()
+                    end
+                }
+            }
+        })
+        exports.ox_target:addBoxZone({
+            coords = Config.TargetLocs['packageZone'].coords,
+            size = vec3(1, 2, 2),
+            rotation = 90,
+            debug = false,
+            options = {
+                {
+                    name = 'box',
+                    icon = 'fa-solid fa-cube',
+                    label = 'Pack Money',
+                    canInteract = function()
+                        if cutting and washed then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    onSelect = function()
+                        PackageMoney()
+                    end
+                }
+            }
+        })
+        exports.ox_target:addSphereZone({
+            coords = Config.TargetLocs['washingZone'].coords,
+            radius = 1,
+            debug = true,
+            options = {
+                {
+                    name = 'box',
+                    icon = 'fa-solid fa-cube',
+                    label = 'Wash Money',
+                    canInteract = function()
+                        if cutting and not packaged then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
+                    onSelect = function()
+                        Washmoney()
+                    end
+                }
+            }
+        })
+    end
+end
+
+CreateThread(function()
+    exports.ox_target:addBoxZone({
+        coords = Config.TargetLocs["Enter"].coords,
+        size = vec3(1, 2, 2),
+        rotation = 90,
+        debug = false,
+        options = {
+            {
+                name = 'box',
+                icon = 'fa-solid fa-cube',
+                label = 'Enter Money Wash',
+                canInteract = function()
+                    local Key = Inventory:Search('count', 'lockpick')
+                    if Key > 0 then
+                        return true
+                    else
+                        return false
+                    end
+                end,
+                onSelect = function()
+                    EnterWash()
+                end
+            }
+        }
+    })
+    exports.ox_target:addBoxZone({
+        coords = Config.TargetLocs["Exit"].coords,
+        size = vec3(1, 2, 3),
+        rotation = 90,
+        debug = false,
+        options = {
+            {
+                name = 'box',
+                icon = 'fa-solid fa-cube',
+                label = 'Exit Money Wash',
+                canInteract = function()
+                    return true
+                end,
+                onSelect = function()
+                    ExitWash()
+                end
+            }
+        }
+    })
+    exports.ox_target:addBoxZone({
+        coords = Config.TargetLocs['powerBox'].coords,
+        size = vec3(1, 2, 2),
+        rotation = 90,
+        debug = false,
+        options = {
+            {
+                name = 'box',
+                icon = 'fa-solid fa-cube',
+                label = 'Turn On Power',
+                canInteract = function()
+                    if not IsPowered then
+                        return true
+                    else
+                        return false
+                    end
+                end,
+                onSelect = function()
+                    IsPowered = true
+                    KickOnPower()
+                end
+            }
+        }
+    })
+end)
+
+CreateThread(function()
+    if Config.Blips then
+        for k, v in pairs(Config.Blip) do
+            FuelStationBlip = AddBlipForCoord(v.x, v.y, v.z)
+            SetBlipSprite(FuelStationBlip, Config.BlipSpirte)
+            SetBlipDisplay(FuelStationBlip, 2)
+            SetBlipScale(FuelStationBlip, Config.BlipSize)
+            SetBlipAsShortRange(FuelStationBlip, true)
+            SetBlipColour(FuelStationBlip, Config.BlipColor)
+            BeginTextCommandSetBlipName("STRING")
+            AddTextComponentSubstringPlayerName(Config.BlipLabel)
+            EndTextCommandSetBlipName(FuelStationBlip)
+        end
+    end
+end)

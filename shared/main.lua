@@ -28,6 +28,9 @@ Config.TargetLocs = {
     },
     ["washingZone"] = { 
         coords = vector3(1122.3478, -3193.7756, -40.3620),
+    },
+    ["powerBox"] = { 
+        coords = vector3(1115.3292, -3193.651, -40.99671),
     }
 }
 
