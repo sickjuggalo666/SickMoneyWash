@@ -1,35 +1,29 @@
 local cutting = false
 local packaged = false
+local washed = false
 
--- Washed Menu
-local function OpenWashedMenu()
+local Inventory = exports.ox_inventory
+
+local function OpenWashMenu()
     local money = exports.ox_inventory:Search('count', 'money')
     local input = lib.inputDialog('Money Wash', {
-        {type = 'number', label = 'Dirty Money', description = 'Enter Amount you want to wash', icon = 'hashtag'},
+        {type = 'number', label = 'Dirty Money', description = 'Enter Amount you want to wash', icon = 'hashtag', required = true},
       })
 
-    if not input or input[1] > money then 
+    if not input or (input[1] > money) then 
         lib.notify({
             title = 'Money Wash',
             description = 'We Don\'t like Liars Here',
             type = 'error'
         })
-        return 
+        return
     end
-    print(json.encode(input))
+    local amount = input[1]
+    TriggerEvent("SickMoneyWash:washmoney2", Config.Laundry.washingZone.coord, Config.Laundry.washingZone.heading, amount)
 
-    TriggerServerEvent('SickMoneyWash:washMoney', input[1])
 end
 
 local function EnterWash()
-	DoScreenFadeOut(500)
-	Wait(2000)
-	SetEntityCoords(PlayerPedId(), Config.MoneyWash["Enter"].coords.x, Config.MoneyWash["Enter"].coords.y, Config.MoneyWash["Enter"].coords.z, 0, 0, 0, false)
-	SetEntityHeading(PlayerPedId(), Config.MoneyWash["Enter"].coords.w)
-	DoScreenFadeIn(500)
-end
-
-local function ExitWash()
 	DoScreenFadeOut(500)
 	Wait(2000)
 	SetEntityCoords(PlayerPedId(), Config.MoneyWash["Exit"].coords.x, Config.MoneyWash["Exit"].coords.y, Config.MoneyWash["Exit"].coords.z, 0, 0, 0, false)
@@ -37,11 +31,19 @@ local function ExitWash()
 	DoScreenFadeIn(500)
 end
 
+local function ExitWash()
+	DoScreenFadeOut(500)
+	Wait(2000)
+	SetEntityCoords(PlayerPedId(), Config.MoneyWash["Enter"].coords.x, Config.MoneyWash["Enter"].coords.y, Config.MoneyWash["Enter"].coords.z, 0, 0, 0, false)
+	SetEntityHeading(PlayerPedId(), Config.MoneyWash["Enter"].coords.w)
+	DoScreenFadeIn(500)
+end
+
 
 local function CuttingMoney()
     if not cutting then
         cutting = true
-        TriggerEvent("SickMoneyWash:cuttingMoney2", Config.Laundry.cuttingZone.coords, Config.Laundry.cuttingZone.heading)
+        cuttingMoney2(Config.Laundry.cuttingZone.coords, Config.Laundry.cuttingZone.heading)
 	else
         lib.notify({
             title = 'Money Wash',
@@ -52,16 +54,27 @@ local function CuttingMoney()
 	end
 end
 
-
---packageMoney
 local function PackageMoney()
     if cutting then
-        if not packaged then
-            packaged = true
-            TriggerEvent("SickMoneyWash:packageMoneyanim")
+        if washed then 
+            if not packaged then
+                packaged = true
+                packageMoneyanim()
+            else
+                lib.notify({
+                    title = 'Money Wash',
+                    description = 'Money Already Packed',
+                    type = 'error'
+                })
+                ESX.ShowNotification('You already pack the money')
+                Wait(1000)
+            end
         else
-            ESX.ShowNotification('You already pack the money')
-            Wait(1000)
+            lib.notify({
+                title = 'Money Wash',
+                description = 'Wash Money First',
+                type = 'error'
+            })
         end
     else
         lib.notify({
@@ -73,19 +86,8 @@ local function PackageMoney()
 end
 
 local function Washmoney()
-  if cutting then
-    if packaged then
+  if cutting and not packaged then
     OpenWashedMenu()
-	  cutting = false
-	  packaged = false
-      TriggerEvent("SickMoneyWash:washmoney2", Config.Laundry.washingZone.coord, Config.Laundry.washingZone.heading)
-    else
-        lib.notify({
-            title = 'Money Wash',
-            description = 'Pack Money First',
-            type = 'error'
-        })
-    end
   else
     lib.notify({
         title = 'Money Wash',
@@ -98,10 +100,10 @@ end
 
 CreateThread(function()	
     exports.ox_target:addBoxZone({
-        coords = Config.MoneyWash["Exit"].coords,
-        size = vec3(2, 2, 2),
-        rotation = 45,
-        debug = true,
+        coords = Config.TargetLocs["Enter"].coords,
+        size = vec3(1, 2, 2),
+        rotation = 90,
+        debug = false,
         options = {
             {
                 name = 'box',
@@ -122,22 +124,17 @@ CreateThread(function()
         }
     })
     exports.ox_target:addBoxZone({
-        coords = Config.Laundry.cuttingZone.coords,
-        size = vec3(2, 2, 2),
-        rotation = 45,
-        debug = true,
+        coords = Config.TargetLocs["Exit"].coords,
+        size = vec3(1, 2, 3),
+        rotation = 90,
+        debug = false,
         options = {
             {
                 name = 'box',
                 icon = 'fa-solid fa-cube',
-                label = 'Enter Money Wash',
+                label = 'Exit Money Wash',
                 canInteract = function()
-                    local Key = Inventory:Search('count', 'lockpick')
-                    if Key > 0 then
-                        return true
-                    else
-                        return false
-                    end
+                    return true
                 end,
                 onSelect = function()
                     ExitWash()
@@ -146,10 +143,10 @@ CreateThread(function()
         }
     })
     exports.ox_target:addBoxZone({
-        coords = Config.Laundry.cuttingZone.coords,
-        size = vec3(2, 2, 2),
-        rotation = 45,
-        debug = true,
+        coords = Config.TargetLocs['cuttingZone'].coords,
+        size = vec3(1, 2, 2),
+        rotation = 90,
+        debug = false,
         options = {
             {
                 name = 'box',
@@ -170,18 +167,17 @@ CreateThread(function()
         }
     })
     exports.ox_target:addBoxZone({
-        coords = Config.Laundry.packageZone.coords,
-        size = vec3(2, 2, 2),
-        rotation = 45,
-        debug = true,
+        coords = Config.TargetLocs['packageZone'].coords,
+        size = vec3(1, 2, 2),
+        rotation = 90,
+        debug = false,
         options = {
             {
                 name = 'box',
                 icon = 'fa-solid fa-cube',
                 label = 'Pack Money',
                 canInteract = function()
-                    local Key = Inventory:Search('count', 'black_money')
-                    if Key > 0 then
+                    if cutting then
                         return true
                     else
                         return false
@@ -193,10 +189,9 @@ CreateThread(function()
             }
         }
     })
-    exports.ox_target:addBoxZone({
-        coords = Config.Laundry.packageZone.coords,
-        size = vec3(2, 2, 2),
-        rotation = 45,
+    exports.ox_target:addSphereZone({
+        coords = Config.TargetLocs['washingZone'].coords,
+        radius = 1,
         debug = true,
         options = {
             {
@@ -204,8 +199,7 @@ CreateThread(function()
                 icon = 'fa-solid fa-cube',
                 label = 'Wash Money',
                 canInteract = function()
-                    local Key = Inventory:Search('count', 'black_money')
-                    if Key > 0 then
+                    if cutting and packaged then
                         return true
                     else
                         return false
@@ -237,8 +231,7 @@ end)
 
 
 
-RegisterNetEvent("SickMoneyWash:cuttingMoney2")
-AddEventHandler("SickMoneyWash:cuttingMoney2", function(coord, heading)
+function cuttingMoney2(coord, heading)
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_cut_sheets@"
     RequestAnimDict(animDict)
@@ -312,7 +305,7 @@ AddEventHandler("SickMoneyWash:cuttingMoney2", function(coord, heading)
     DeleteEntity(strip5)
     DeleteEntity(singlestack)
 	FreezeEntityPosition(playerPed, false)
-end)
+end
 
 
 local Items = {
@@ -325,8 +318,7 @@ local Items = {
 
 
 
-RegisterNetEvent("SickMoneyWash:packageMoneyanim")
-AddEventHandler("SickMoneyWash:packageMoneyanim", function()
+function packageMoneyanim()
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_counting_notes@"
     RequestAnimDict(animDict)
@@ -380,11 +372,10 @@ AddEventHandler("SickMoneyWash:packageMoneyanim", function()
     DeleteEntity(wrapped)
     DeleteEntity(wrapped2)
 	FreezeEntityPosition(playerPed, false)
-end)
+end
 
 
-RegisterNetEvent("SickMoneyWash:washmoney2")
-AddEventHandler("SickMoneyWash:washmoney2", function(coord, heading)
+function washmoney2(coord, heading,amount)
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_drying_notes@"
     RequestAnimDict(animDict)
@@ -411,5 +402,8 @@ AddEventHandler("SickMoneyWash:washmoney2", function(coord, heading)
     DeleteEntity(money2)
 	FreezeEntityPosition(playerPed, false)
     washcount = 0
-end)
-
+    TriggerServerEvent('SickMoneyWash:washMoney', amount)
+    cutting = false
+    packaged = false
+    washed = false
+end

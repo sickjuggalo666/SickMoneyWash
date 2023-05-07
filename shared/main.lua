@@ -1,30 +1,46 @@
 Config = {}
 
-Config.Blips = true -- set false to disable blips
+Config.Blips = true
 Config.BlipSpirte = 605
 Config.BlipColor = 4
 Config.BlipSize = 0.7 
-Config.BlipLabel = "Laundry"  --blip name
-Config.Blip = {   --blip Locations
+Config.BlipLabel = "Laundry" 
+Config.Blip = { 
 	vector3(244.5052, 374.24737, 105.73813),
 }
 
 Config = {
-    Percentage = 0.9, -- The percentage of money the player gets back after washing. 1.0 is 100% 0.1 is 10%
+    Percentage = 0.9,
 }
 
-
-
-Config.MoneyWash = {
-	["Enter"] = { --Entrance of the MoneyWash
-        coords = vector4(1138.0, -3198.96, -40.67, 11.64),
+Config.TargetLocs = {
+    ["Enter"] = { 
+        coords = vector3(244.5396, 374.3640, 105.7381),
     },
-	["Exit"] = {  --Exit of the MoneyWash
-        coords = vector4(244.5052, 374.24737, 105.73813, 338.35507),
+    ["Exit"] = { 
+        coords = vector3(1138.0, -3198.96, -39.67),
+    },
+    ["cuttingZone"] = { 
+        coords = vector3(1122.2744, -3197.8213, -40.3933),
+    },
+    ["packageZone"] = { 
+        coords = vector3(1120.12, -3197.88, -40.92),
+    },
+    ["washingZone"] = { 
+        coords = vector3(1122.3478, -3193.7756, -40.3620),
     }
 }
 
-Config.Laundry = {  --Dont change anything here
+Config.MoneyWash = {
+	["Enter"] = { 
+        coords = vector4(244.5396, 374.3640, 105.7381, 337.4070),
+    },
+	["Exit"] = { 
+        coords = vector4(1138.0, -3198.96, -39.67, 11.64),
+    }
+}
+
+Config.Laundry = {
     cuttingZone = {
         coords = vector3(1122.24, -3197.88, -40.4), 
         heading = 179.46,

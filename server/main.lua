@@ -1,6 +1,7 @@
 ESX = exports['es_extended']:getSharedObject()
+local Inventory = exports.ox_inventory
 
-RegisterServerEvent('esx_moneywash:washMoney', function(amount)
+RegisterServerEvent('SickMoneyWash:washMoney', function(amount)
 	local tax = Config.Percentage
 	amount = ESX.Math.Round(tonumber(amount))
 	washedCash = amount * tax
