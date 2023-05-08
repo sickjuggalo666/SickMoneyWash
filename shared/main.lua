@@ -1,11 +1,12 @@
 Config = {}
 
+Config.EnterItem = 'key_card' -- item needed to enter money wash
 Config.Blips = true
 Config.BlipSpirte = 605
 Config.BlipColor = 4
-Config.BlipSize = 0.7 
-Config.BlipLabel = "Laundry" 
-Config.Blip = { 
+Config.BlipSize = 0.7
+Config.BlipLabel = "Laundry"
+Config.Blip = {
 	vector3(244.5052, 374.24737, 105.73813),
 }
 
@@ -14,46 +15,46 @@ Config = {
 }
 
 Config.TargetLocs = {
-    ["Enter"] = { 
+    ["Enter"] = {
         coords = vector3(244.5396, 374.3640, 105.7381),
     },
-    ["Exit"] = { 
+    ["Exit"] = {
         coords = vector3(1138.0, -3198.96, -39.67),
     },
-    ["cuttingZone"] = { 
+    ["cuttingZone"] = {
         coords = vector3(1122.2744, -3197.8213, -40.3933),
     },
-    ["packageZone"] = { 
+    ["packageZone"] = {
         coords = vector3(1120.12, -3197.88, -40.92),
     },
-    ["washingZone"] = { 
+    ["washingZone"] = {
         coords = vector3(1122.3478, -3193.7756, -40.3620),
     },
-    ["powerBox"] = { 
+    ["powerBox"] = {
         coords = vector3(1115.3292, -3193.651, -40.99671),
     }
 }
 
 Config.MoneyWash = {
-	["Enter"] = { 
+	["Enter"] = {
         coords = vector4(244.5396, 374.3640, 105.7381, 337.4070),
     },
-	["Exit"] = { 
+	["Exit"] = {
         coords = vector4(1138.0, -3198.96, -39.67, 11.64),
     }
 }
 
 Config.Laundry = {
     cuttingZone = {
-        coords = vector3(1122.24, -3197.88, -40.4), 
+        coords = vector3(1122.24, -3197.88, -40.4),
         heading = 179.46,
     },
     packageZone = {
-        coord = vector3(1120.12, -3197.88, -39.92), 
+        coord = vector3(1120.12, -3197.88, -39.92),
         heading = 180.93,
     },
     washingZone = {
-    coord = vector3(1122.32, -3194.6, -40.4), 
+    coord = vector3(1122.32, -3194.6, -40.4),
     heading = 346.76,
 	}
 }

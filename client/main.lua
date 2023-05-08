@@ -2,10 +2,13 @@ local cutting = false
 local packaged = false
 local washed = false
 local IsPowered = false
+local washcount = 0
+local Target = exports.ox_target
 
 local Inventory = exports.ox_inventory
 
 local function cuttingMoney2(coord, heading)
+    Target:disableTargeting(true)
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_cut_sheets@"
     RequestAnimDict(animDict)
@@ -79,6 +82,7 @@ local function cuttingMoney2(coord, heading)
     DeleteEntity(strip5)
     DeleteEntity(singlestack)
 	FreezeEntityPosition(playerPed, false)
+    Target:disableTargeting(false)
 end
 
 
@@ -93,6 +97,7 @@ local Items = {
 
 
 local function packageMoneyanim()
+    Target:disableTargeting(true)
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_counting_notes@"
     RequestAnimDict(animDict)
@@ -146,10 +151,15 @@ local function packageMoneyanim()
     DeleteEntity(wrapped)
     DeleteEntity(wrapped2)
 	FreezeEntityPosition(playerPed, false)
+    TriggerServerEvent('SickMoneyWash:washMoney', washcount)
+    cutting = false
+    packaged = false
+    washed = false
+    Target:disableTargeting(false)
 end
 
-
 local function washmoney2(coord, heading,amount)
+    Target:disableTargeting(true)
     local playerPed = PlayerPedId()
     local animDict = "anim@amb@business@cfm@cfm_drying_notes@"
     RequestAnimDict(animDict)
@@ -175,30 +185,26 @@ local function washmoney2(coord, heading,amount)
     DeleteEntity(money)
     DeleteEntity(money2)
 	FreezeEntityPosition(playerPed, false)
-    washcount = 0
-    TriggerServerEvent('SickMoneyWash:washMoney', amount)
-    cutting = false
-    packaged = false
-    washed = false
+    washcount = washcount + amount
+    washed = true
+    Target:disableTargeting(false)
 end
 
 local function OpenWashMenu()
-    local money = Inventory:Search('count', 'money')
+    local money = Inventory:Search('count', 'black_money')
     local input = lib.inputDialog('Money Wash', {
         {type = 'number', label = 'Dirty Money', description = 'Enter Amount you want to wash', icon = 'hashtag', required = true},
       })
-
-    if not input or (input[1] > money) then
+    if not input or input[1] > money then
         lib.notify({
             title = 'Money Wash',
-            description = 'We Don\'t like Liars Here',
+            description = 'We Don\'t like Liars Here, You only got $'..money,
             type = 'error'
         })
         return
     end
     local amount = input[1]
-    TriggerEvent("SickMoneyWash:washmoney2", Config.Laundry.washingZone.coord, Config.Laundry.washingZone.heading, amount)
-
+    washmoney2(Config.Laundry.washingZone.coord, Config.Laundry.washingZone.heading, amount)
 end
 
 local function EnterWash()
@@ -262,7 +268,7 @@ end
 
 local function Washmoney()
   if cutting and not packaged then
-    OpenWashedMenu()
+    OpenWashMenu()
   else
     lib.notify({
         title = 'Money Wash',
@@ -274,7 +280,7 @@ end
 
 local function KickOnPower()
     if IsPowered then
-        exports.ox_target:addBoxZone({
+        Target:addBoxZone({
             coords = Config.TargetLocs['cuttingZone'].coords,
             size = vec3(1, 2, 2),
             rotation = 90,
@@ -285,12 +291,7 @@ local function KickOnPower()
                     icon = 'fa-solid fa-cube',
                     label = 'Cut Money',
                     canInteract = function()
-                        local Key = Inventory:Search('count', 'black_money')
-                        if Key > 0 then
-                            return true
-                        else
-                            return false
-                        end
+                        return true
                     end,
                     onSelect = function()
                         CuttingMoney()
@@ -298,7 +299,7 @@ local function KickOnPower()
                 }
             }
         })
-        exports.ox_target:addBoxZone({
+        Target:addBoxZone({
             coords = Config.TargetLocs['packageZone'].coords,
             size = vec3(1, 2, 2),
             rotation = 90,
@@ -321,10 +322,10 @@ local function KickOnPower()
                 }
             }
         })
-        exports.ox_target:addSphereZone({
+        Target:addSphereZone({
             coords = Config.TargetLocs['washingZone'].coords,
             radius = 1,
-            debug = true,
+            debug = false,
             options = {
                 {
                     name = 'box',
@@ -347,7 +348,7 @@ local function KickOnPower()
 end
 
 CreateThread(function()
-    exports.ox_target:addBoxZone({
+    Target:addBoxZone({
         coords = Config.TargetLocs["Enter"].coords,
         size = vec3(1, 2, 2),
         rotation = 90,
@@ -358,7 +359,7 @@ CreateThread(function()
                 icon = 'fa-solid fa-cube',
                 label = 'Enter Money Wash',
                 canInteract = function()
-                    local Key = Inventory:Search('count', 'lockpick')
+                    local Key = Inventory:Search('count', Config.EnterItem)
                     if Key > 0 then
                         return true
                     else
@@ -371,7 +372,7 @@ CreateThread(function()
             }
         }
     })
-    exports.ox_target:addBoxZone({
+    Target:addBoxZone({
         coords = Config.TargetLocs["Exit"].coords,
         size = vec3(1, 2, 3),
         rotation = 90,
@@ -390,7 +391,7 @@ CreateThread(function()
             }
         }
     })
-    exports.ox_target:addBoxZone({
+    Target:addBoxZone({
         coords = Config.TargetLocs['powerBox'].coords,
         size = vec3(1, 2, 2),
         rotation = 90,
@@ -408,8 +409,27 @@ CreateThread(function()
                     end
                 end,
                 onSelect = function()
-                    IsPowered = true
-                    KickOnPower()
+                    if lib.progressBar({
+                        duration = 2000,
+                        label = 'Turnin on Power',
+                        useWhileDead = false,
+                        canCancel = true,
+                        disable = {
+                            car = true,
+                            move = true,
+                            combat = true
+                        },
+                        anim = {
+                            dict = 'anim@gangops@facility@servers@bodysearch@',
+                            clip = 'player_search'
+                        }
+                    })
+                    then
+                        IsPowered = true
+                        KickOnPower()
+                    else
+                        print('Do stuff when cancelled')
+                    end
                 end
             }
         }
