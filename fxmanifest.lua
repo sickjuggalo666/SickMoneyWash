@@ -19,3 +19,9 @@ client_scripts {
 server_scripts {
 	'server/*.lua'
 }
+
+escrow_ignore {
+	'client/*.lua',
+	'server/*.lua',
+	'shared/*lua'
+}
