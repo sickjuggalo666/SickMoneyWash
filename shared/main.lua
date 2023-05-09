@@ -1,13 +1,16 @@
 Config = {}
 
-Config.EnterItem = 'key_card' -- item needed to enter money wash
+Config.LaundryPin = 6669
+Config.UseEntrance = true -- set to false if you dont want to use the TP door to money wash
 Config.Blips = true
-Config.BlipSpirte = 605
-Config.BlipColor = 4
-Config.BlipSize = 0.7
-Config.BlipLabel = "Laundry"
 Config.Blip = {
-	vector3(244.5052, 374.24737, 105.73813),
+    [1] = {
+	    coords = vector3(244.5052, 374.24737, 105.73813),
+        BlipSpirte = 605,
+        BlipColor = 4,
+        BlipSize = 0.7,
+        BlipLabel = "Laundry",
+    }
 }
 
 Config = {

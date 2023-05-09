@@ -94,8 +94,6 @@ local Items = {
     'bkr_prop_money_counter',
 }
 
-
-
 local function packageMoneyanim()
     Target:disableTargeting(true)
     local playerPed = PlayerPedId()
@@ -151,6 +149,7 @@ local function packageMoneyanim()
     DeleteEntity(wrapped)
     DeleteEntity(wrapped2)
 	FreezeEntityPosition(playerPed, false)
+    
     TriggerServerEvent('SickMoneyWash:washMoney', washcount)
     cutting = false
     packaged = false
@@ -278,6 +277,16 @@ local function Washmoney()
   end
 end
 
+local function OpenPin()
+    local input = lib.inputDialog('Dialog title', {
+        {type = 'input', label = 'PinCode', description = 'Enter PinCode For Laundry', required = true, icon = 'hashtag'},
+      })
+      if not input then return end
+      if input[1] == Config.LaundryPin then
+        EnterWash()
+      end
+end
+
 local function KickOnPower()
     if IsPowered then
         Target:addBoxZone({
@@ -347,7 +356,7 @@ local function KickOnPower()
     end
 end
 
-CreateThread(function()
+if Config.UseEntrance then
     Target:addBoxZone({
         coords = Config.TargetLocs["Enter"].coords,
         size = vec3(1, 2, 2),
@@ -359,19 +368,15 @@ CreateThread(function()
                 icon = 'fa-solid fa-cube',
                 label = 'Enter Money Wash',
                 canInteract = function()
-                    local Key = Inventory:Search('count', Config.EnterItem)
-                    if Key > 0 then
-                        return true
-                    else
-                        return false
-                    end
+                    return true
                 end,
                 onSelect = function()
-                    EnterWash()
+                    OpenPin()
                 end
             }
         }
     })
+
     Target:addBoxZone({
         coords = Config.TargetLocs["Exit"].coords,
         size = vec3(1, 2, 3),
@@ -391,63 +396,64 @@ CreateThread(function()
             }
         }
     })
-    Target:addBoxZone({
-        coords = Config.TargetLocs['powerBox'].coords,
-        size = vec3(1, 2, 2),
-        rotation = 90,
-        debug = false,
-        options = {
-            {
-                name = 'box',
-                icon = 'fa-solid fa-cube',
-                label = 'Turn On Power',
-                canInteract = function()
-                    if not IsPowered then
-                        return true
-                    else
-                        return false
-                    end
-                end,
-                onSelect = function()
-                    if lib.progressBar({
-                        duration = 2000,
-                        label = 'Turnin on Power',
-                        useWhileDead = false,
-                        canCancel = true,
-                        disable = {
-                            car = true,
-                            move = true,
-                            combat = true
-                        },
-                        anim = {
-                            dict = 'anim@gangops@facility@servers@bodysearch@',
-                            clip = 'player_search'
-                        }
-                    })
-                    then
-                        IsPowered = true
-                        KickOnPower()
-                    else
-                        print('Do stuff when cancelled')
-                    end
-                end
-            }
-        }
-    })
-end)
+end
 
-CreateThread(function()
+Target:addBoxZone({
+    coords = Config.TargetLocs['powerBox'].coords,
+    size = vec3(1, 2, 2),
+    rotation = 90,
+    debug = false,
+    options = {
+        {
+            name = 'box',
+            icon = 'fa-solid fa-cube',
+            label = 'Turn On Power',
+            canInteract = function()
+                if not IsPowered then
+                    return true
+                else
+                    return false
+                end
+            end,
+            onSelect = function()
+                if lib.progressBar({
+                    duration = 5000,
+                    label = 'Turnin on Power',
+                    useWhileDead = false,
+                    canCancel = true,
+                    disable = {
+                        car = true,
+                        move = true,
+                        combat = true
+                    },
+                    anim = {
+                        dict = 'anim@gangops@facility@servers@bodysearch@',
+                        clip = 'player_search'
+                    }
+                })
+                then
+                    IsPowered = true
+                    KickOnPower()
+                else
+                    
+                end
+            end
+        }
+    }
+})
+
+Citizen.CreateThread(function()
     if Config.Blips then
         for k, v in pairs(Config.Blip) do
-            FuelStationBlip = AddBlipForCoord(v.x, v.y, v.z)
-            SetBlipSprite(FuelStationBlip, Config.BlipSpirte)
-            SetBlipDisplay(FuelStationBlip, 2)
-            SetBlipScale(FuelStationBlip, Config.BlipSize)
-            SetBlipAsShortRange(FuelStationBlip, true)
-            SetBlipColour(FuelStationBlip, Config.BlipColor)
+            Blip = AddBlipForCoord(v.coords)
+            SetBlipSprite(Blip, v.BlipSpirte)
+            SetBlipDisplay(Blip, 2)
+            SetBlipScale(Blip, v.BlipSize)
+            SetBlipAsShortRange(Blip, true)
+            SetBlipColour(Blip, v.BlipColor)
             BeginTextCommandSetBlipName("STRING")
-            AddTextComponentSubstringPlayerName(Config.BlipLabel)
-            EndTextCommandSetBlipName(FuelStationBlip)
+            AddTextComponentSubstringPlayerName(v.BlipLabel)
+            EndTextCommandSetBlipName(Blip)
         end
     end
 end)
