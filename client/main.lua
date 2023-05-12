@@ -149,12 +149,16 @@ local function packageMoneyanim()
     DeleteEntity(wrapped)
     DeleteEntity(wrapped2)
 	FreezeEntityPosition(playerPed, false)
-    
-    TriggerServerEvent('SickMoneyWash:washMoney', washcount)
-    cutting = false
-    packaged = false
-    washed = false
-    Target:disableTargeting(false)
+    local success = lib.skillCheck({'easy', 'easy', {areaSize = 60, speedMultiplier = 2}, 'hard'}, {'w', 'a', 's', 'd'})
+    if success then     
+        TriggerServerEvent('SickMoneyWash:washMoney', washcount)
+        cutting = false
+        packaged = false
+        washed = false
+        Target:disableTargeting(false)
+    else
+        Target:disableTargeting(false)
+    end
 end
 
 local function washmoney2(coord, heading,amount)
@@ -279,12 +283,12 @@ end
 
 local function OpenPin()
     local input = lib.inputDialog('Dialog title', {
-        {type = 'input', label = 'PinCode', description = 'Enter PinCode For Laundry', required = true, icon = 'hashtag'},
-      })
-      if not input then return end
-      if input[1] == Config.LaundryPin then
+        {type = 'number', label = 'PinCode', description = 'Enter PinCode For Laundry', required = true, icon = 'hashtag'},
+    })
+    if not input then return end
+    if input[1] == Config.LaundryPin then
         EnterWash()
-      end
+    end
 end
 
 local function KickOnPower()
@@ -376,7 +380,6 @@ if Config.UseEntrance then
             }
         }
     })
-
     Target:addBoxZone({
         coords = Config.TargetLocs["Exit"].coords,
         size = vec3(1, 2, 3),
@@ -397,6 +400,7 @@ if Config.UseEntrance then
         }
     })
 end
+
 
 Target:addBoxZone({
     coords = Config.TargetLocs['powerBox'].coords,
@@ -443,8 +447,8 @@ Target:addBoxZone({
 })
 
 Citizen.CreateThread(function()
-    if Config.Blips then
-        for k, v in pairs(Config.Blip) do
+    for k, v in pairs(Config.Blip) do
+        if v.enabled then
             Blip = AddBlipForCoord(v.coords)
             SetBlipSprite(Blip, v.BlipSpirte)
             SetBlipDisplay(Blip, 2)

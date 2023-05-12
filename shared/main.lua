@@ -2,9 +2,10 @@ Config = {}
 
 Config.LaundryPin = 6669
 Config.UseEntrance = true -- set to false if you dont want to use the TP door to money wash
-Config.Blips = true
+
 Config.Blip = {
     [1] = {
+        enabled = false,
 	    coords = vector3(244.5052, 374.24737, 105.73813),
         BlipSpirte = 605,
         BlipColor = 4,
@@ -13,7 +14,7 @@ Config.Blip = {
     }
 }
 
-Config = {
+Config.tax = {
     Percentage = 0.9,
 }
 
