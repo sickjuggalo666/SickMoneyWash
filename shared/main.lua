@@ -1,5 +1,5 @@
 Config = {}
-
+Config.Framework = 'QBCore' -- 'QBCore' or 'ESX'
 Config.LaundryPin = 6669
 Config.UseEntrance = true -- set to false if you dont want to use the TP door to money wash
 

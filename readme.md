@@ -1,14 +1,14 @@
 Thanks for using my Script I really hope you and your players will love it!
 
 I have seen people selling something as simple as this and I just want everyone to have something more advanced than base 
-ESX Money Wash! 
+ESX/QBCore Money Wash! 
 
 **Dependencies**
 
 ```
 Target : Ox_Target
 Libs : Ox_lib -- Notifications
-Framework : ESX -- for ONE line and thats until I find a better way
+Framework : QBCore/ESX -- for ONE line and thats until I find a better way
 Inventory : Ox_Inventory -- checking for items and helps make the script more "standalone" with handling money!
 ```
 
