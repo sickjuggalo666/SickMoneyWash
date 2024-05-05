@@ -153,10 +153,12 @@ local function packageMoneyanim()
     if success then     
         TriggerServerEvent('SickMoneyWash:washMoney', washcount)
         cutting = false
-        packaged = false
+        packaged = true
         washed = false
         Target:disableTargeting(false)
     else
+        cutting = true
+        washed = true
         Target:disableTargeting(false)
     end
 end
@@ -230,6 +232,7 @@ end
 local function CuttingMoney()
     if not cutting then
         cutting = true
+        packaged = false
         cuttingMoney2(Config.Laundry.cuttingZone.coords, Config.Laundry.cuttingZone.heading)
 	else
         lib.notify({
@@ -244,7 +247,6 @@ local function PackageMoney()
     if cutting then
         if washed then
             if not packaged then
-                packaged = true
                 packageMoneyanim()
             else
                 lib.notify({

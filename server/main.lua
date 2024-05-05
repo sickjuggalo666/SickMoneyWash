@@ -1,11 +1,23 @@
-ESX = exports['es_extended']:getSharedObject()
+Core = nil
+
+if Config.Framework == 'ESX' then
+    Core = exports['es_extended']:getSharedObject()
+elseif Config.Framework == 'QBCore' then
+    Core = exports['qb-core']:GetCoreObject()
+end
+
 local Inventory = exports.ox_inventory
 
 RegisterServerEvent('SickMoneyWash:washMoney', function(amount)
     if source == nil then return end
 	local tax = Config.Percentage
-	washedCash = amount * tax
-	washedTotal = ESX.Math.Round(tonumber(washedCash))
+	local washedCash = amount * tax
+    local washedTotal
+    if Config.Framework == 'ESX' then
+        washedTotal = Core.Math.Round(tonumber(washedCash))
+    elseif Config.Framework == 'QBCore' then
+        washedTotal = Core.Shared.Round(tonumber(washedCash))
+    end
 	local PlayerMoney = Inventory:Search(source, 'count', 'black_money')
 	if amount > 0 and PlayerMoney >= amount then
         Inventory:RemoveItem(source, 'black_money', washedTotal)
