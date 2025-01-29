@@ -4,7 +4,7 @@ game 'gta5'
 name "SickMoneyWash"
 description "MoneyWash For ESX, Ox Target, Ox inv and Ox Libs"
 author "SickJuggalo666"
-version "2.0.0"
+version "2.0.1"
 lua54 'yes'
 
 shared_scripts {
