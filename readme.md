@@ -8,7 +8,7 @@ ESX/QBCore Money Wash!
 ```
 Target : Ox_Target
 Libs : Ox_lib -- Notifications
-Framework : QBCore/ESX -- for ONE line and thats until I find a better way
+Framework : NONE REQUIRED!!!! Only ox_libs!
 Inventory : Ox_Inventory -- checking for items and helps make the script more "standalone" with handling money!
 ```
 
