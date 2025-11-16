@@ -2,6 +2,11 @@ Config = {}
 Config.LaundryPin = 6669
 Config.UseEntrance = true -- set to false if you dont want to use the TP door to money wash
 
+Config.UseT1gerGangs = true
+Config.RemoveNotirietyRep = true
+Config.GainNotiriety = 3
+Config.RemoveNotiriety = 3
+
 Config.Blip = {
     [1] = {
         enabled = false,

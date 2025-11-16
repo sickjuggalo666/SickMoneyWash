@@ -5,7 +5,7 @@ RegisterServerEvent('SickMoneyWash:washMoney', function(amount)
 	local tax = Config.tax.Percentage
 	local washedCash = amount * tax
     local washedTotal = lib.math.round(tonumber(washedCash), 0)
-
+    local Gang = Config.UseT1gerGangs and exports['t1ger_gangsystem']:GetPlayerGang(source)
 	local PlayerMoney = Inventory:Search(source, 'count', 'black_money')
 	if amount > 0 and PlayerMoney >= amount then
         Inventory:RemoveItem(source, 'black_money', washedTotal)
@@ -15,7 +15,13 @@ RegisterServerEvent('SickMoneyWash:washMoney', function(amount)
             type = 'success'
         })
 		Inventory:AddItem(source, 'money', washedTotal)
+        if Config.UseT1gerGangs then
+            exports['t1ger_gangsystem']:PlusGangNotoriety(Gang, Config.GainNotiriety)
+        end
 	else
+        if Config.UseT1gerGangs and Config.RemoveNotirietyRep then
+            exports['t1ger_gangsystem']:MinusGangNotoriety(Gang, Config.RemoveNotiriety)
+        end
         TriggerClientEvent('ox_lib:notify', source, {
             title = 'Money Wash',
             description = 'You dont have enough Dirty Money',
