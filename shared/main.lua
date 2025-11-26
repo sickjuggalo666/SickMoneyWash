@@ -1,11 +1,19 @@
 Config = {}
+
+Config.DoorUseItem = true -- false for pin number
 Config.LaundryPin = 6669
 Config.UseEntrance = true -- set to false if you dont want to use the TP door to money wash
-
+Config.DoorItem = 'keycard' -- set false for no item need
+-- GANGS
 Config.UseT1gerGangs = true
 Config.RemoveNotirietyRep = true
 Config.GainNotiriety = 3
 Config.RemoveNotiriety = 3
+
+-- ITEMS
+Config.RequiredWashItem = 'washcard' -- Set Required Item for Washing. set 'false' for no item requirement
+Config.RequiredCuttingItem = 'scissors' -- Set Required Item for Cutting money. set 'false' for no item requirement
+Config.RequiredPackagingItem = 'plastic_wrap' -- Set Required Item for Packaging Money. set 'false' for no item requirement
 
 Config.Blip = {
     [1] = {

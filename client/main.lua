@@ -300,6 +300,7 @@ local function KickOnPower()
             size = vec3(1, 2, 2),
             rotation = 90,
             debug = false,
+            items = Config.RequiredCuttingItem,
             options = {
                 {
                     name = 'box',
@@ -319,6 +320,7 @@ local function KickOnPower()
             size = vec3(1, 2, 2),
             rotation = 90,
             debug = false,
+            items = Config.RequiredPackagingItem,
             options = {
                 {
                     name = 'box',
@@ -341,6 +343,7 @@ local function KickOnPower()
             coords = Config.TargetLocs['washingZone'].coords,
             radius = 1,
             debug = false,
+            items = Config.RequiredWashItem,
             options = {
                 {
                     name = 'box',
@@ -368,6 +371,7 @@ if Config.UseEntrance then
         size = vec3(1, 2, 2),
         rotation = 90,
         debug = false,
+        items = Config.DoorItem,
         options = {
             {
                 name = 'box',
@@ -377,7 +381,11 @@ if Config.UseEntrance then
                     return true
                 end,
                 onSelect = function()
-                    OpenPin()
+                    if Config.DoorUseItem then
+                        EnterWash()
+                    else
+                        OpenPin()
+                    end
                 end
             }
         }
